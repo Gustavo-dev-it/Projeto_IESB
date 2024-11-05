@@ -9,6 +9,7 @@ import { Button, Col, Form, Row } from 'react-bootstrap'
 import { FaArrowLeft, FaCheck } from "react-icons/fa"
 import { v4 } from 'uuid'
 import * as Yup from 'yup'
+import teste from '@/services/receitas.json'
 
 
 export default function ReceitaFormPage({ searchParams }) {
@@ -17,14 +18,13 @@ export default function ReceitaFormPage({ searchParams }) {
 
     const [ingredientes, setIngredientes] = useState([])
     const [receitas, setReceitas] = useState([]);
-    const [receitaEditada, setReceitaEditada] = useState(null);
+    const [receitaEditada, setReceitaEditada] = useState();
 
     useEffect(() => {
+        console.log('receitas => ', teste)
         // Carrega os ingredientes da API na inicialização da página
-        apiReceitas.get('/ingredientes').then(response => {
-          setIngredientes(response.data)
-        })
-      }, [])
+      
+      }, )
 
     useEffect(() => {    
         // Busca a lista de receitas no localStorage, ou inicia com uma lista vazia
@@ -57,7 +57,7 @@ export default function ReceitaFormPage({ searchParams }) {
         tempoPreparo: '',
         porcoes: '',
         tipo: '',
-        ingredientes: [],
+        ingredientes: '',
         instrucoes: ''
     };
 
@@ -68,7 +68,7 @@ export default function ReceitaFormPage({ searchParams }) {
         tempoPreparo: Yup.number().required("Campo obrigatório"),
         porcoes: Yup.number().required("Campo obrigatório"),
         tipo: Yup.string().required("Campo obrigatório"),
-        ingredientes: Yup.array().min(1, "Selecione ao menos um ingrediente"),
+        ingredientes: Yup.string().min(1, "Selecione ao menos um ingrediente"),
         instrucoes: Yup.string().required("Campo obrigatório")
     });
 
@@ -85,7 +85,7 @@ export default function ReceitaFormPage({ searchParams }) {
                         <Row className='mb-2'>
                             <Form.Group as={Col}>
                                 <Form.Label>Título:</Form.Label>
-                                <Form.Control
+                                <Form.Select
                                     name='titulo'
                                     type='text'
                                     value={values.titulo}
@@ -93,7 +93,12 @@ export default function ReceitaFormPage({ searchParams }) {
                                     onBlur={handleBlur}
                                     isValid={touched.titulo && !errors.titulo}
                                     isInvalid={touched.titulo && errors.titulo}
-                                />
+                                >
+                                <option value="">Selecione</option>
+                                    {teste.map(nome => (
+                                        <option key={nome.id} value={nome.receita}>{nome.receita}</option>
+                                    ))}
+                                    </Form.Select>
                                 <Form.Control.Feedback type='invalid'>{errors.titulo}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
@@ -101,7 +106,7 @@ export default function ReceitaFormPage({ searchParams }) {
                         <Row className='mb-2'>
                             <Form.Group as={Col}>
                                 <Form.Label>Modo de Preparo:</Form.Label>
-                                <Form.Control
+                                <Form.Select
                                     name='descricao'
                                     as='textarea'
                                     rows={3}
@@ -110,7 +115,12 @@ export default function ReceitaFormPage({ searchParams }) {
                                     onBlur={handleBlur}
                                     isValid={touched.descricao && !errors.descricao}
                                     isInvalid={touched.descricao && errors.descricao}
-                                />
+                                >
+                                    <option value="">Selecione</option>
+                                    {teste.map(receita => (
+                                        <option key={receita.modo_preparo} value={receita.modo_preparo}>{receita.modo_preparo}</option>
+                                    ))}
+                                    </Form.Select>
                                 <Form.Control.Feedback type='invalid'>{errors.descricao}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
@@ -170,7 +180,6 @@ export default function ReceitaFormPage({ searchParams }) {
                                 <Form.Label>Ingredientes:</Form.Label>
                                 <Form.Select
                                     name='ingredientes'
-                                    multiple
                                     value={values.ingredientes}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
@@ -178,11 +187,11 @@ export default function ReceitaFormPage({ searchParams }) {
                                     isInvalid={touched.ingredientes && errors.ingredientes}
                                 >
                                     <option value="">Selecione</option>
-                                    {ingredientes.map(ingrediente => (
-                                        <option key={ingrediente.id} value={ingrediente.nome}>{ingrediente.nome}</option>
+                                    {teste.map(receita => (
+                                        <option key={receita.id} value={receita.ingredientes}>{receita.ingredientes}</option>
                                     ))}
                                 </Form.Select>
-                                <Form.Control.Feedback type='invalid'>{errors.ingredientes}</Form.Control.Feedback>
+                                <Form.Control.Feedback type='invalid'>{errors.teste}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
 
