@@ -38,7 +38,7 @@ export default function Pagina({ titulo, children }) {
                 <FaCarrot className="me-2" /> Ingredientes
               </Nav.Link>
               <Nav.Link href="/refeicoes" className="d-flex align-items-center text-white">
-                <FaList className="me-2" /> Categoria de Refeições
+                <FaList className="me-2" /> Calcule seu IMC
               </Nav.Link>
               <Nav.Link href="/cardapios" className="d-flex align-items-center text-white">
                 <FaCalendarAlt className="me-2" /> Cardápios Semanais

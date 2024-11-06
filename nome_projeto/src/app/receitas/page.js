@@ -53,11 +53,11 @@ export default function ReceitasPage() {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Título</th>
+            <th>Nome da Receita</th>
             <th>Descrição</th>
             <th>Tempo de Preparo</th>
             <th>Porções</th>
-            <th>Tipo</th>
+            <th>Modo de preparo</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -65,11 +65,11 @@ export default function ReceitasPage() {
           {receitas.map(receita => {
             return (
               <tr key={receita.id}>
-                <td>{receita.titulo}</td>
-                <td>{receita.descricao}</td>
+                <td>{receita.nome}</td>
+                <td>{receita.categoria}</td>
                 <td>{receita.tempoPreparo} min</td>
-                <td>{receita.porcoes}</td>
-                <td>{receita.tipo}</td>
+                <td>{receita.rendimento}</td>
+                <td>{receita.instrucoes}</td>
                 <td className='text-center'>
                   {/* Botões das ações */}
                   <Button 
