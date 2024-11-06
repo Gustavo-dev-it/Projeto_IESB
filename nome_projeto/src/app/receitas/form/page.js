@@ -1,20 +1,29 @@
-'use client'
+'use client';
 
-import Pagina from '@/app/components/page'
-import { Formik, FieldArray } from 'formik'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
-import { FaArrowLeft, FaCheck, FaPlus, FaTrash } from "react-icons/fa"
-import { v4 } from 'uuid'
-import * as Yup from 'yup'
+import Pagina from '@/app/components/page';
+import { Formik, FieldArray } from 'formik';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import { FaArrowLeft, FaCheck, FaPlus, FaTrash } from "react-icons/fa";
+import { v4 } from 'uuid';
+import * as Yup from 'yup';
 
-export default function ReceitaFormPage({ searchParams }) {
-    const router = useRouter()
+export default function ReceitaFormPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [receitas, setReceitas] = useState([]);
     const [receitaEditada, setReceitaEditada] = useState(null);
     const [ingredientesDisponiveis, setIngredientesDisponiveis] = useState([]);
+    const [initialValues, setInitialValues] = useState({
+        nome: '',
+        categoria: '',
+        tempoPreparo: '',
+        rendimento: '',
+        ingredientes: [{ nome: '', quantidade: '', unidade: '' }],
+        instrucoes: ''
+    });
 
     useEffect(() => {
         // Carrega a lista de receitas do localStorage ao iniciar
@@ -26,10 +35,13 @@ export default function ReceitaFormPage({ searchParams }) {
         setIngredientesDisponiveis(ingredientesLocalStorage);
 
         // Se tiver um ID, busca a receita para edição
-        const id = searchParams?.id;
+        const id = searchParams.get('id');
         if (id) {
             const receita = receitasLocalStorage.find(item => item.id === id);
-            setReceitaEditada(receita);
+            if (receita) {
+                setReceitaEditada(receita);
+                setInitialValues(receita); // Atualiza os valores iniciais do formulário
+            }
         }
     }, [searchParams]);
 
@@ -37,28 +49,22 @@ export default function ReceitaFormPage({ searchParams }) {
     function salvar(dados) {
         if (receitaEditada) {
             // Atualiza a receita existente
-            Object.assign(receitaEditada, dados);
-            localStorage.setItem('receitas', JSON.stringify(receitas));
+            const receitasAtualizadas = receitas.map(item =>
+                item.id === receitaEditada.id ? { ...item, ...dados } : item
+            );
+            setReceitas(receitasAtualizadas);
+            localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
         } else {
             // Cria uma nova receita com um ID único
             dados.id = v4();
-            receitas.push(dados);
-            localStorage.setItem('receitas', JSON.stringify(receitas));
+            const novasReceitas = [...receitas, dados];
+            setReceitas(novasReceitas);
+            localStorage.setItem('receitas', JSON.stringify(novasReceitas));
         }
 
         alert("Receita cadastrada com sucesso!");
         router.push("/receitas");
     }
-
-    // Valores iniciais do formulário
-    const initialValues = receitaEditada || {
-        nome: '',
-        categoria: '',
-        tempoPreparo: '',
-        rendimento: '',
-        ingredientes: [{ nome: '', quantidade: '', unidade: '' }],
-        instrucoes: ''
-    };
 
     // Esquema de validação com Yup
     const validationSchema = Yup.object().shape({
@@ -79,6 +85,7 @@ export default function ReceitaFormPage({ searchParams }) {
     return (
         <Pagina titulo="Cadastro de Receita">
             <Formik
+                enableReinitialize // Permite que o formulário seja reinicializado quando os valores iniciais mudam
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={salvar}
@@ -205,7 +212,9 @@ export default function ReceitaFormPage({ searchParams }) {
                                             </Col>
                                         </Row>
                                     ))}
-                                    
+                                    <Button variant="secondary" onClick={() => arrayHelpers.push({ nome: '', quantidade: '', unidade: '' })}>
+                                        <FaPlus /> Adicionar Ingrediente
+                                    </Button>
                                 </>
                             )}
                         />
@@ -231,11 +240,10 @@ export default function ReceitaFormPage({ searchParams }) {
                         <Form.Group className='text-end mt-3'>
                             <Button className='me-2' href='/receitas'><FaArrowLeft /> Voltar</Button>
                             <Button type='submit' variant='success'><FaCheck /> Enviar</Button>
-
                         </Form.Group>
                     </Form>
                 )}
             </Formik>
         </Pagina>
-    )
+    );
 }

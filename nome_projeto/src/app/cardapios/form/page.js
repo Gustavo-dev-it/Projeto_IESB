@@ -1,21 +1,32 @@
-'use client'
+'use client';
 
-import Pagina from '@/app/components/page'
-import { Formik } from 'formik'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
-import { FaArrowLeft, FaCheck } from "react-icons/fa"
-import { v4 } from 'uuid'
-import * as Yup from 'yup'
+import Pagina from '@/app/components/page';
+import { Formik } from 'formik';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import { FaArrowLeft, FaCheck } from "react-icons/fa";
+import { v4 } from 'uuid';
+import * as Yup from 'yup';
 
-export default function CardapioFormPage({ searchParams }) {
-    const router = useRouter()
+export default function CardapioFormPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [cardapios, setCardapios] = useState([]);
     const [cardapioEditado, setCardapioEditado] = useState(null);
     const [receitas, setReceitas] = useState([]);
     const [usuarios, setUsuarios] = useState([]); // Lista de usuários
+    const [initialValues, setInitialValues] = useState({
+        usuario: '',
+        segunda: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        terca: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        quarta: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        quinta: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        sexta: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        sabado: { cafe: '', almoco: '', lanche: '', jantar: '' },
+        domingo: { cafe: '', almoco: '', lanche: '', jantar: '' },
+    });
 
     useEffect(() => {
         // Carrega a lista de receitas do localStorage
@@ -31,10 +42,13 @@ export default function CardapioFormPage({ searchParams }) {
         setUsuarios(usuariosLocalStorage);
 
         // Busca o cardápio para edição, se houver ID
-        const id = searchParams?.id;
+        const id = searchParams.get('id');
         if (id) {
             const cardapio = cardapiosLocalStorage.find(item => item.id === id);
-            setCardapioEditado(cardapio);
+            if (cardapio) {
+                setCardapioEditado(cardapio);
+                setInitialValues(cardapio); // Atualiza os valores iniciais com os dados do cardápio a ser editado
+            }
         }
     }, [searchParams]);
 
@@ -58,18 +72,6 @@ export default function CardapioFormPage({ searchParams }) {
         router.push("/cardapios");
     }
 
-    // Valores iniciais do formulário
-    const initialValues = cardapioEditado || {
-        usuario: '', // Para selecionar o usuário
-        segunda: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        terca: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        quarta: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        quinta: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        sexta: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        sabado: { cafe: '', almoco: '', lanche: '', jantar: '' },
-        domingo: { cafe: '', almoco: '', lanche: '', jantar: '' },
-    };
-
     // Esquema de validação com Yup
     const validationSchema = Yup.object().shape({
         usuario: Yup.string().required("Selecione um usuário"),
@@ -85,6 +87,7 @@ export default function CardapioFormPage({ searchParams }) {
     return (
         <Pagina titulo="Cadastro de Cardápio Semanal">
             <Formik
+                enableReinitialize // Permite que o formulário seja reinicializado quando initialValues mudar
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={salvar}
@@ -152,5 +155,5 @@ export default function CardapioFormPage({ searchParams }) {
                 )}
             </Formik>
         </Pagina>
-    )
+    );
 }

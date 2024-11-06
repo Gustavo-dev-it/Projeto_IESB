@@ -1,30 +1,42 @@
-'use client'
+'use client';
 
-import Pagina from '@/app/components/page'
-import { Formik } from 'formik'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
-import { FaArrowLeft, FaCheck } from "react-icons/fa"
-import { v4 } from 'uuid'
-import * as Yup from 'yup'
+import Pagina from '@/app/components/page';
+import { Formik } from 'formik';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import { FaArrowLeft, FaCheck } from "react-icons/fa";
+import { v4 } from 'uuid';
+import * as Yup from 'yup';
 
-export default function UsuarioFormPage({ searchParams }) {
-    const router = useRouter()
+export default function UsuarioFormPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [usuarios, setUsuarios] = useState([]);
     const [usuarioEditado, setUsuarioEditado] = useState(null);
+    const [initialValues, setInitialValues] = useState({
+        nome: '',
+        email: '',
+        senha: '',
+        confirmacaoSenha: '',
+        telefone: '',
+        endereco: '',
+    });
 
     useEffect(() => {
         // Carrega a lista de usuários do localStorage ao iniciar
-        const usuariosLocalStorage = JSON.parse(localStorage.getItem("usuarios")) || []
+        const usuariosLocalStorage = JSON.parse(localStorage.getItem("usuarios")) || [];
         setUsuarios(usuariosLocalStorage);
 
         // Se houver um ID na URL, busca o usuário para edição
-        const id = searchParams?.id;
+        const id = searchParams.get('id');
         if (id) {
             const usuario = usuariosLocalStorage.find(item => item.id === id);
-            setUsuarioEditado(usuario);
+            if (usuario) {
+                setUsuarioEditado(usuario);
+                setInitialValues(usuario); // Atualiza os valores iniciais do formulário
+            }
         }
     }, [searchParams]);
 
@@ -32,28 +44,22 @@ export default function UsuarioFormPage({ searchParams }) {
     function salvar(dados) {
         if (usuarioEditado) {
             // Atualiza o usuário existente
-            Object.assign(usuarioEditado, dados);
-            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            const usuariosAtualizados = usuarios.map(item =>
+                item.id === usuarioEditado.id ? { ...item, ...dados } : item
+            );
+            setUsuarios(usuariosAtualizados);
+            localStorage.setItem('usuarios', JSON.stringify(usuariosAtualizados));
         } else {
             // Cria um novo usuário com um ID único
             dados.id = v4();
-            usuarios.push(dados);
-            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            const novosUsuarios = [...usuarios, dados];
+            setUsuarios(novosUsuarios);
+            localStorage.setItem('usuarios', JSON.stringify(novosUsuarios));
         }
 
         alert("Usuário cadastrado com sucesso!");
         router.push("/usuarios");
     }
-
-    // Valores iniciais do formulário
-    const initialValues = usuarioEditado || {
-        nome: '',
-        email: '',
-        senha: '',
-        confirmacaoSenha: '',
-        telefone: '',
-        endereco: '',
-    };
 
     // Esquema de validação com Yup
     const validationSchema = Yup.object().shape({
@@ -70,6 +76,7 @@ export default function UsuarioFormPage({ searchParams }) {
     return (
         <Pagina titulo="Cadastro de Usuário">
             <Formik
+                enableReinitialize // Permite que o formulário seja reinicializado quando os valores iniciais mudam
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={salvar}
@@ -180,5 +187,5 @@ export default function UsuarioFormPage({ searchParams }) {
                 )}
             </Formik>
         </Pagina>
-    )
+    );
 }

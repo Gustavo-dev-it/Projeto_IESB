@@ -1,28 +1,41 @@
-'use client'
+'use client';
 
-import Pagina from '@/app/components/page'
-import { Formik, FieldArray } from 'formik'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
-import { FaArrowLeft, FaCheck, FaPlus, FaTrash } from "react-icons/fa"
-import { v4 } from 'uuid'
-import * as Yup from 'yup'
+import Pagina from '@/app/components/page';
+import { Formik, FieldArray } from 'formik';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import { FaArrowLeft, FaCheck, FaPlus, FaTrash } from "react-icons/fa";
+import { v4 } from 'uuid';
+import * as Yup from 'yup';
 
-export default function IngredienteFormPage({ searchParams }) {
-    const router = useRouter()
+export default function IngredienteFormPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [ingredientes, setIngredientes] = useState([]);
     const [ingredienteEditado, setIngredienteEditado] = useState(null);
+    const [initialValues, setInitialValues] = useState({
+        ingredientes: [{ nome: '', quantidade: '', unidade: '' }]
+    });
 
     useEffect(() => {
-        const ingredientesLocalStorage = JSON.parse(localStorage.getItem("ingredientes")) || []
+        const ingredientesLocalStorage = JSON.parse(localStorage.getItem("ingredientes")) || [];
         setIngredientes(ingredientesLocalStorage);
 
-        const id = searchParams?.id;
+        const id = searchParams.get('id');
         if (id) {
             const ingrediente = ingredientesLocalStorage.find(item => item.id === id);
-            setIngredienteEditado(ingrediente);
+            if (ingrediente) {
+                setIngredienteEditado(ingrediente);
+                setInitialValues({
+                    ingredientes: [{
+                        nome: ingrediente.nome,
+                        quantidade: ingrediente.quantidade,
+                        unidade: ingrediente.unidade
+                    }]
+                });
+            }
         }
     }, [searchParams]);
 
@@ -49,12 +62,6 @@ export default function IngredienteFormPage({ searchParams }) {
         }, 100);
     }
 
-    const initialValues = {
-        ingredientes: ingredienteEditado
-            ? [{ nome: ingredienteEditado.nome, quantidade: ingredienteEditado.quantidade, unidade: ingredienteEditado.unidade }]
-            : [{ nome: '', quantidade: '', unidade: '' }]
-    };
-
     const validationSchema = Yup.object().shape({
         ingredientes: Yup.array().of(
             Yup.object().shape({
@@ -68,6 +75,7 @@ export default function IngredienteFormPage({ searchParams }) {
     return (
         <Pagina titulo="Cadastro de Ingrediente">
             <Formik
+                enableReinitialize // Permite que o formulário seja reinicializado quando os valores iniciais mudam
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={salvar}
@@ -142,5 +150,5 @@ export default function IngredienteFormPage({ searchParams }) {
                 )}
             </Formik>
         </Pagina>
-    )
+    );
 }
