@@ -40,3 +40,31 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Botão de Novo (verde) */
+.btn-novo {
+  background-color: #4CAF50; /* Verde */
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botão de Excluir (laranja) */
+.btn-excluir {
+  background-color: #FF5722; /* Laranja */
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

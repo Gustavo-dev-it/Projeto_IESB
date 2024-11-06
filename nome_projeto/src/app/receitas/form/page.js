@@ -1,225 +1,99 @@
-'use client'
+'use client';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { useState } from 'react';
+import { Button, Col, Form, Row, Alert, Container, Card } from 'react-bootstrap';
+import Pagina from '@/app/components/page';
 
-import Pagina from '@/app/components/page'
-import apiReceitas from '@/services/apiReceitas' // importação do serviço da API de receitas
-import { Formik } from 'formik'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
-import { FaArrowLeft, FaCheck } from "react-icons/fa"
-import { v4 } from 'uuid'
-import * as Yup from 'yup'
-import teste from '@/services/receitas.json'
+export default function ImcCalculatorPage() {
+  const [imcResult, setImcResult] = useState(null);
+  const [status, setStatus] = useState('');
 
-
-export default function ReceitaFormPage({ searchParams }) {
-    const router = useRouter()
+  function calcularIMC({ peso, altura }) {
+    const imc = peso / ((altura / 100) ** 2);
+    setImcResult(imc.toFixed(2));
     
+    if (imc < 18.5) setStatus('Abaixo do peso');
+    else if (imc >= 18.5 && imc < 24.9) setStatus('Peso normal');
+    else if (imc >= 25 && imc < 29.9) setStatus('Sobrepeso');
+    else setStatus('Obesidade');
+  }
 
-    const [ingredientes, setIngredientes] = useState([])
-    const [receitas, setReceitas] = useState([]);
-    const [receitaEditada, setReceitaEditada] = useState();
+  const initialValues = { peso: '', altura: '' };
 
-    useEffect(() => {
-        console.log('receitas => ', teste)
-        // Carrega os ingredientes da API na inicialização da página
-      
-      }, )
+  const validationSchema = Yup.object().shape({
+    peso: Yup.number().required("Campo obrigatório").positive("O peso deve ser positivo"),
+    altura: Yup.number().required("Campo obrigatório").positive("A altura deve ser positiva"),
+  });
 
-    useEffect(() => {    
-        // Busca a lista de receitas no localStorage, ou inicia com uma lista vazia
-        const receitasLocalStorage = JSON.parse(localStorage.getItem("receitas")) || []
-        setReceitas(receitasLocalStorage)
-        console.log(receitasLocalStorage)
-    }, [])
+  return (
+    <div style={{
+      backgroundImage: "url('/images/fitness_background.jpg')",
+      backgroundSize: 'cover',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#fff'
+    }}>
+      <Container className="d-flex justify-content-center">
+        <Card style={{ width: '100%', maxWidth: '600px', padding: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '10px' }}>
+          <h2 className="text-center mb-4" style={{ color: '#007BFF' }}>Calculadora de IMC</h2>
+          <p className="text-center text-muted mb-4">Descubra seu Índice de Massa Corporal e saiba se você está no peso ideal!</p>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={calcularIMC}
+          >
+            {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+              <Form onSubmit={handleSubmit}>
+                <Row className="mb-3">
+                  <Form.Group as={Col}>
+                    <Form.Label style={{ color: '#555' }}>Peso (kg):</Form.Label>
+                    <Form.Control
+                      name="peso"
+                      type="number"
+                      value={values.peso}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isValid={touched.peso && !errors.peso}
+                      isInvalid={touched.peso && errors.peso}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.peso}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
-    // Função para salvar os dados do formulário
-    function salvar(dados) {
-        if (receitaEditada) {
-            // Atualiza a receita existente
-            Object.assign(receitaEditada, dados);
-            localStorage.setItem('receitas', JSON.stringify(receitas));
-        } else {
-            // Cria uma nova receita com um ID único
-            dados.id = v4();
-            receitas.push(dados);
-            localStorage.setItem('receitas', JSON.stringify(receitas));
-        }
+                <Row className="mb-3">
+                  <Form.Group as={Col}>
+                    <Form.Label style={{ color: '#555' }}>Altura (cm):</Form.Label>
+                    <Form.Control
+                      name="altura"
+                      type="number"
+                      value={values.altura}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isValid={touched.altura && !errors.altura}
+                      isInvalid={touched.altura && errors.altura}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.altura}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
-        alert("Receita cadastrada com sucesso!");
-        router.push("/receitas");
-    }
+                <Form.Group className="text-center">
+                  <Button type="submit" variant="primary" className="mt-3" style={{ width: '100%' }}>Calcular IMC</Button>
+                </Form.Group>
+              </Form>
+            )}
+          </Formik>
 
-    // Valores iniciais do formulário
-    const initialValues = receitaEditada || {
-        titulo: '',
-        descricao: '',
-        tempoPreparo: '',
-        porcoes: '',
-        tipo: '',
-        ingredientes: '',
-        instrucoes: ''
-    };
-
-    // Esquema de validação com Yup
-    const validationSchema = Yup.object().shape({
-        titulo: Yup.string().required("Campo obrigatório"),
-        descricao: Yup.string().required("Campo obrigatório"),
-        tempoPreparo: Yup.number().required("Campo obrigatório"),
-        porcoes: Yup.number().required("Campo obrigatório"),
-        tipo: Yup.string().required("Campo obrigatório"),
-        ingredientes: Yup.string().min(1, "Selecione ao menos um ingrediente"),
-        instrucoes: Yup.string().required("Campo obrigatório")
-    });
-
-    return (
-        <Pagina titulo="Cadastro de Receita">
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={salvar}
-            >
-                {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
-                    <Form onSubmit={handleSubmit}>
-                        {/* Campos do formulário */}
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Título:</Form.Label>
-                                <Form.Select
-                                    name='titulo'
-                                    type='text'
-                                    value={values.titulo}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.titulo && !errors.titulo}
-                                    isInvalid={touched.titulo && errors.titulo}
-                                >
-                                <option value="">Selecione</option>
-                                    {teste.map(nome => (
-                                        <option key={nome.id} value={nome.receita}>{nome.receita}</option>
-                                    ))}
-                                    </Form.Select>
-                                <Form.Control.Feedback type='invalid'>{errors.titulo}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Modo de Preparo:</Form.Label>
-                                <Form.Select
-                                    name='descricao'
-                                    as='textarea'
-                                    rows={3}
-                                    value={values.descricao}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.descricao && !errors.descricao}
-                                    isInvalid={touched.descricao && errors.descricao}
-                                >
-                                    <option value="">Selecione</option>
-                                    {teste.map(receita => (
-                                        <option key={receita.modo_preparo} value={receita.modo_preparo}>{receita.modo_preparo}</option>
-                                    ))}
-                                    </Form.Select>
-                                <Form.Control.Feedback type='invalid'>{errors.descricao}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Tempo de Preparo (minutos):</Form.Label>
-                                <Form.Control
-                                    name='tempoPreparo'
-                                    type='number'
-                                    value={values.tempoPreparo}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.tempoPreparo && !errors.tempoPreparo}
-                                    isInvalid={touched.tempoPreparo && errors.tempoPreparo}
-                                />
-                                <Form.Control.Feedback type='invalid'>{errors.tempoPreparo}</Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group as={Col}>
-                                <Form.Label>Porções:</Form.Label>
-                                <Form.Control
-                                    name='porcoes'
-                                    type='number'
-                                    value={values.porcoes}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.porcoes && !errors.porcoes}
-                                    isInvalid={touched.porcoes && errors.porcoes}
-                                />
-                                <Form.Control.Feedback type='invalid'>{errors.porcoes}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Tipo:</Form.Label>
-                                <Form.Select
-                                    name='tipo'
-                                    value={values.tipo}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.tipo && !errors.tipo}
-                                    isInvalid={touched.tipo && errors.tipo}
-                                >
-                                    <option value="">Selecione</option>
-                                    <option value="Doce">Doce</option>
-                                    <option value="Salgado">Salgado</option>
-                                    <option value="Agridoce">Agridoce</option>
-                                </Form.Select>
-                                <Form.Control.Feedback type='invalid'>{errors.tipo}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Ingredientes:</Form.Label>
-                                <Form.Select
-                                    name='ingredientes'
-                                    value={values.ingredientes}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.ingredientes && !errors.ingredientes}
-                                    isInvalid={touched.ingredientes && errors.ingredientes}
-                                >
-                                    <option value="">Selecione</option>
-                                    {teste.map(receita => (
-                                        <option key={receita.id} value={receita.ingredientes}>{receita.ingredientes}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type='invalid'>{errors.teste}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        <Row className='mb-2'>
-                            <Form.Group as={Col}>
-                                <Form.Label>Instruções:</Form.Label>
-                                <Form.Control
-                                    name='instrucoes'
-                                    as='textarea'
-                                    rows={5}
-                                    value={values.instrucoes}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    isValid={touched.instrucoes && !errors.instrucoes}
-                                    isInvalid={touched.instrucoes && errors.instrucoes}
-                                />
-                                <Form.Control.Feedback type='invalid'>{errors.instrucoes}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-
-                        {/* Botões */}
-                        <Form.Group className='text-end'>
-                            <Button className='me-2' href='/receitas'><FaArrowLeft /> Voltar</Button>
-                            <Button type='submit' variant='success'><FaCheck /> Enviar</Button>
-                        </Form.Group>
-                    </Form>
-                )}
-            </Formik>
-        </Pagina>
-    )
+          {imcResult && (
+            <Alert variant="info" className="mt-4 text-center">
+              <h4>Resultado do IMC:</h4>
+              <p>Seu IMC é <strong>{imcResult}</strong>, indicando: <strong>{status}</strong>.</p>
+            </Alert>
+          )}
+        </Card>
+      </Container>
+    </div>
+  );
 }
