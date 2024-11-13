@@ -10,6 +10,8 @@ import { v4 } from 'uuid';
 import * as Yup from 'yup';
 
 export default function CardapioFormPage() {
+
+    // useRouter, useSearchParams: Hooks do Next.js para manipular navegação e parâmetros de busca na URL.
     const router = useRouter();
     const searchParams = useSearchParams();
 

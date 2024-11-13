@@ -8,6 +8,9 @@ import { useRouter } from 'next/navigation';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+// Line do react-chartjs-2: Um componente de gráfico de linhas específico para React que utiliza a biblioteca chart.js.
+// ChartJS com register: Registro de módulos de chart.js, necessários para exibir o gráfico (escalas, pontos, linhas, título, tooltip e legenda).
+
 export default function ImcChartPage() {
   const [imcRecords, setImcRecords] = useState([]);
   const router = useRouter();
@@ -32,6 +35,14 @@ export default function ImcChartPage() {
       tension: 0.3
     }))
   };
+
+  // responsive: Ajusta o gráfico automaticamente para diferentes tamanhos de tela.
+// plugins.legend: Configura a posição da legenda no gráfico.
+// plugins.title: Define o título principal do gráfico.
+// scales: Configura os eixos X e Y:
+// Eixo X (x): Exibe "Data" como título.
+// Eixo Y (y): Define o intervalo de valores (10 a 40) e configura stepSize para 5.
+  
 
   const options = {
     responsive: true,
